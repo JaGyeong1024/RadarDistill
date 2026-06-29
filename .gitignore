@@ -14,3 +14,6 @@ venv/
 *.bin
 output
 version.py
+.wandb_api.md
+*.wandb_api*
+.netrc
