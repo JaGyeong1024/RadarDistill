@@ -37,14 +37,16 @@ else
 fi
 
 echo "==> [3/3] 산출물 검증"
+# 코드가 root_path = DATA_PATH/VERSION 으로 쓰므로 산출물은 data/nuscenes/<VERSION>/ 아래에 생김
+OUT="$DATA/$NUSC_VERSION"
 fail=0
 for f in \
   nuscenes_infos_6radar_10sweeps_train.pkl \
   nuscenes_infos_6radar_10sweeps_val.pkl \
   nuscenes_dbinfos_10sweeps_with_radar_withvelo.pkl ; do
-  if [ -f "$DATA/$f" ]; then echo "  OK   $f"; else echo "  MISS $f"; fail=1; fi
+  if [ -f "$OUT/$f" ]; then echo "  OK   $f"; else echo "  MISS $f"; fail=1; fi
 done
-if [ -d "$DATA/gt_database_10sweeps_with_radar_withvelo" ]; then
+if [ -d "$OUT/gt_database_10sweeps_with_radar_withvelo" ]; then
   echo "  OK   gt_database_10sweeps_with_radar_withvelo/"
 else
   echo "  MISS gt_database_10sweeps_with_radar_withvelo/"; fail=1

@@ -17,3 +17,6 @@ version.py
 .wandb_api.md
 *.wandb_api*
 .netrc
+3skey.txt
+runpod_api.txt
+runpodctl.tar.gz
