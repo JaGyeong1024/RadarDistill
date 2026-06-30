@@ -61,8 +61,18 @@ cd tools
 run_once() { build_args; echo "python train.py ${ARGS[*]}"; python train.py "${ARGS[@]}"; }
 
 if [ "$AUTO_RESTART" = "1" ]; then
-  until run_once; do
-    echo "==> train 비정상 종료. 15초 후 최신 ckpt에서 재개..."; sleep 15
+  # 일시 장애(CUDA/IO 글리치 등)는 최신 ckpt에서 재개. 단 결정적 장애 무한루프 방지:
+  # 최대 MAX_RESTART회만 재시도, 초과하면 중단(exit 1) -> 사람이 로그 보고 판단.
+  MAX_RESTART="${MAX_RESTART:-3}"
+  n=0
+  while ! run_once; do
+    n=$((n+1))
+    if [ "$n" -gt "$MAX_RESTART" ]; then
+      echo "==> [AUTO_RESTART] ${MAX_RESTART}회 재시도 초과 -> 결정적 장애로 판단, 학습 중단. full.log / output 로그 확인 필요."
+      exit 1
+    fi
+    echo "==> [AUTO_RESTART] train 비정상 종료, 재시도 ${n}/${MAX_RESTART} (15초 후 최신 ckpt에서 재개)..."
+    sleep 15
   done
 else
   run_once
