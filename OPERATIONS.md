@@ -6,9 +6,14 @@
 
 ---
 
-## 0. 한 줄 현황
-- 환경 구축 완료(✅), **nuScenes 데이터 업로드 진행 중(🔄 ~5.5h)**, 그 다음 데이터 추출→스모크→학습→평가.
-- pod는 업로드 동안 **정지(EXITED)** 상태 (S3가 볼륨에 직접 쓰므로 GPU 불필요).
+## 0. 라이브 상태 (2026-06-30, 웹 인수인계 시점) ★먼저 읽기★
+- **현재 pod: `ykzc2lfgb3w5gu` (RadarDistillPod-migration, A100 SXM 80GB, US-WA-1, RUNNING).** (옛 pod n48o1hc5ajmf7a 는 GPU 못잡아 EXITED 방치 → terminate 가능)
+- SSH: `ssh ykzc2lfgb3w5gu-64411258@ssh.runpod.io -i ~/.ssh/id_ed25519` (프록시, §4 방식).
+- 데이터 242GB(15 parts)는 볼륨 `/workspace/RadarDistill/data/_parts/*.tar` 에 있음. 환경 재구축 완료(`import pcdet` OK).
+- **지금 pod에서 tmux 세션 `data` 가 돌고 있음**: `06_extract_parts → 01_prepare_data → 02_smoke` 체인. 로그 = `/workspace/data_phase.log`. (`tmux attach -t data` 로 확인)
+- ⚠️ **이 tmux는 pod의 06(구버전, `--no-same-owner` 없음)으로 돌고 있음** → tar가 ownership 경고 내며 **parts를 자동삭제 안 함**(볼륨 ~484/600GB, 들어는 감) + fail 카운트는 cosmetic. **데이터는 정상 추출됨.** 깔끔히 하려면: tmux 죽이고 → pod의 `runbook/06_extract_parts.sh`를 최신(`--no-same-owner`)으로 교체 → 재실행. 아니면 그냥 두고 추출 끝나면 `rm /workspace/RadarDistill/data/_parts/*.tar` 로 정리.
+- **다음**: data_phase 끝나면 로그에서 스모크 mAP/NDS 확인(≈20.5/43.7). 정상이면 학습 진행: `tmux new -s train; export WANDB_API_KEY=…; bash runbook/07_wandb_sync_loop.sh &(또는 nohup); bash runbook/03_train.sh`. 평가(04) 후 **pod 정지(사용자/Claude가 wandb 완료 확인 후)**.
+- ⚠️ 네트워크FS(mfs) 소형파일 쓰기 느림 → 추출+gt_database가 몇 시간 걸릴 수 있음(일회성). 실측해서 ETA 잡을 것.
 
 ---
 

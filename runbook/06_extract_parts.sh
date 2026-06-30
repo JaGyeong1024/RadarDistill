@@ -8,7 +8,8 @@ mkdir -p "$DST"
 shopt -s nullglob
 ok=0; fail=0
 for p in "$PARTS"/part_*.tar; do
-  if tar xf "$p" -C "$DST"; then rm -f "$p"; ok=$((ok+1)); echo "EXTRACTED $(basename "$p") (ok=$ok)"; else fail=$((fail+1)); echo "FAIL $(basename "$p")"; fi
+  # --no-same-owner: 네트워크FS는 uid 복원(chown) 불가 -> 경고+non-zero 방지 -> rm 정상 동작
+  if tar xf "$p" --no-same-owner -C "$DST"; then rm -f "$p"; ok=$((ok+1)); echo "EXTRACTED $(basename "$p") (ok=$ok)"; else fail=$((fail+1)); echo "FAIL $(basename "$p")"; fi
 done
 echo "=== EXTRACT_DONE ok=$ok fail=$fail ==="
 echo "--- v1.0-trainval 레이아웃 ---"

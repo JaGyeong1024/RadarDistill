@@ -7,6 +7,9 @@ REPO_ROOT="${REPO_ROOT:-/workspace/RadarDistill}"
 INSTALL_WANDB="${INSTALL_WANDB:-1}"   # wandb 사용 안 하면 0
 
 echo "==> [1/6] System packages"
+# 베이스 이미지의 NVIDIA CUDA apt repo는 GPG 키 만료로 apt-get update를 깨뜨림(NO_PUBKEY).
+# git/ffmpeg 등은 우분투 repo에서 받으므로 NVIDIA repo는 불필요 -> 제거(견고화).
+rm -f /etc/apt/sources.list.d/cuda*.list /etc/apt/sources.list.d/nvidia*.list 2>/dev/null || true
 apt-get update
 apt-get install -y ffmpeg libsm6 libxext6 git ninja-build \
   libglib2.0-0 libxrender-dev tmux rclone wget
